@@ -87,7 +87,7 @@ Based on structure can be mapped result to add to DataBases
 
 ## Service Documentation
 
-### MappingService
+### Mapping
 
 The MappingService interface provides a contract for retrieving field mappings based on system names. This service is designed to fetch mappings that allow fields to be mapped between different systems in the application.
 in our scenario load a JSON file Structure from JSON Configuration File or DataBases and use Cacheable for Increase the performance
