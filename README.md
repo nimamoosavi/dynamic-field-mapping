@@ -47,7 +47,7 @@ This file based on structure can be stored anywhere such as Databases, files, et
 
 ### 2. Dynamic Mapping Logic (Mapping)
 
-- Load the JSON configuration file into a Map or other structure types when the application starts.
+- Load the JSON configuration from file or Data bases into a Map or other structure types when the application starts.
 - For each file processed, select the correct mapping configuration.
 - Use this mapping to transform fields from the incoming file into the target JSON structure, regardless of field order.
 
