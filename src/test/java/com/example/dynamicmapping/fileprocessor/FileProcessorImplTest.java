@@ -1,88 +1,87 @@
 package com.example.dynamicmapping.fileprocessor;
 
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.example.dynamicmapping.mapping.MappingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.Mockito;
 
+import java.util.HashMap;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
 class FileProcessorImplTest {
 
-    @Mock
     private MappingService mappingService;
-
     private FileProcessorImpl fileProcessor;
 
     @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.openMocks(this);
+    void setUp() {
+        mappingService = Mockito.mock(MappingService.class);
         fileProcessor = new FileProcessorImpl(mappingService);
     }
 
+    /**
+     * Test {@link FileProcessorImpl#processFile(String, String[], String[])}.
+     * <ul>
+     *   <li>When array of {@link String} with {@code File Headers}.</li>
+     *   <li>Then return {@code {"payload":{"Profile":{}}}}.</li>
+     * </ul>
+     * <p>
+     * Method under test:
+     * {@link FileProcessorImpl#processFile(String, String[], String[])}
+     */
     @Test
-    @DisplayName("check process file and must be equals expected")
-    void testProcessFile_GetValue_WhenMappingCalled_ThenEqualsExpected() {
+    @DisplayName("Test processFile(String, String[], String[]); then equals expected")
+    void testProcessFileSystemA_whenArrayOfStringWithFileHeaders_thenReturnProfile() {
         // Arrange
-        String systemName = "SystemA";
-        String[] fileHeaders = {"FirstName", "LastName", "CustomerId", "status"};
-        String[] rowData = {"John", "Doe", "12345", "Active"};
+        String[] fileHeadersA = {"FirstName", "LastName", "CustomerId", "status", "addressLine", "City", "Province", "PostalCode"};
+        String[] rowDataA = {"Nima", "Moosavi", "12345", "active", "123 Main St", "Toronto", "ON", "M5A 1A1"};
 
-        // Mock the field mappings returned by the MappingService
-        Map<String, String> fieldMapping = Map.of(
+        when(mappingService.getFieldMapping("SystemA")).thenReturn(Map.of(
                 "FirstName", "firstname",
                 "LastName", "lastname",
                 "CustomerId", "customerId",
-                "status", "status"
-        );
-        when(mappingService.getFieldMapping(systemName)).thenReturn(fieldMapping);
+                "status", "status",
+                "addressLine", "address.addressLine",
+                "City", "address.city",
+                "Province", "address.province",
+                "PostalCode", "address.postalCode"
+        ));
 
-        // Action
-        String result = fileProcessor.processFile(systemName, fileHeaders, rowData);
+        //Action
+        String expectedJson = "{\"payload\":{\"Profile\":{\"firstname\":\"Nima\",\"address\":{\"province\":\"ON\",\"city\":\"Toronto\",\"postalCode\":\"M5A 1A1\",\"addressLine\":\"123 Main St\"},\"customerId\":\"12345\",\"lastname\":\"Moosavi\",\"status\":\"active\"}}}";
 
-        String expectedJson = "{ \"payload\": { \"Profile\": {"
-                + "\"firstname\": \"John\", "
-                + "\"lastname\": \"Doe\", "
-                + "\"customerId\": \"12345\", "
-                + "\"status\": \"Active\""
-                + "}}}";
+        String result = fileProcessor.processFile("SystemA", fileHeadersA, rowDataA);
 
-        // Assert that the result matches the expected output
+        // Assertion
         assertEquals(expectedJson, result);
     }
 
+
+    /**
+     * Test {@link FileProcessorImpl#processFile(String, String[], String[])}.
+     * <ul>
+     *   <li>When array of {@link String} with {@code File Headers}.</li>
+     *   <li>Then return {@code {"payload":{"Profile":{}}}}.</li>
+     * </ul>
+     * <p>
+     * Method under test:
+     * {@link FileProcessorImpl#processFile(String, String[], String[])}
+     */
     @Test
-    @DisplayName("check process file and must be equals expected")
-    void testProcessFileWithMissingMapping() {
+    @DisplayName("Test processFile(String, String[], String[]); when array of String with 'File Headers'; then return '{\"payload\":{\"Profile\":{}}}'")
+    void testProcessFile_whenArrayOfStringWithFileHeaders_thenReturnPayloadProfile() {
         // Arrange
-        String systemName = "SystemA";
-        String[] fileHeaders = {"FirstName", "LastName", "CustomerId", "status", "UnknownField"};
-        String[] rowData = {"John", "Doe", "12345", "Active", "N/A"};
+        when(mappingService.getFieldMapping(Mockito.any())).thenReturn(new HashMap<>());
 
-        // Mock the field mappings returned by the MappingService
-        Map<String, String> fieldMapping = Map.of(
-                "FirstName", "firstname",
-                "LastName", "lastname",
-                "CustomerId", "customerId",
-                "status", "status"
-        );
-        when(mappingService.getFieldMapping(systemName)).thenReturn(fieldMapping);
-
-        //Action
-        String result = fileProcessor.processFile(systemName, fileHeaders, rowData);
-
-        String expectedJson = "{ \"payload\": { \"Profile\": {"
-                + "\"firstname\": \"John\", "
-                + "\"lastname\": \"Doe\", "
-                + "\"customerId\": \"12345\", "
-                + "\"status\": \"Active\""
-                + "}}}";
+        // Act
+        String actualProcessFileResult = (new FileProcessorImpl(mappingService)).processFile("System Name",
+                new String[]{"File Headers"}, new String[]{"Row Data"});
 
         // Assert
-        assertEquals(expectedJson, result);
+        assertEquals("{\"payload\":{\"Profile\":{}}}", actualProcessFileResult);
     }
 }

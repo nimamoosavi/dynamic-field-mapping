@@ -1,5 +1,7 @@
 package com.example.dynamicmapping.mapping;
 
+import com.example.dynamicmapping.persistence.exception.JsonNotParsedException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
@@ -25,6 +27,15 @@ public class JsonUtil {
                 throw new IOException("File not found in classpath: " + fileName);
             }
             return objectMapper.readTree(inputStream);
+        }
+    }
+
+
+    public static String writeValueAsString(Object object){
+        try {
+            return objectMapper.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            throw new JsonNotParsedException("Failed to convert map to JSON", e);
         }
     }
 }
